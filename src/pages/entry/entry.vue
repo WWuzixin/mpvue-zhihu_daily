@@ -1,7 +1,7 @@
 <template>
   <div class="container">
     <swiper class="top-story" autoplay="true" circular="true" indicator-dots="true" indicator-color="rgba(0,0,0,.3)" interval="4000" duration="500" indicator-active-color="#ffffff">
-      <swiper-item v-for="item in topStory">
+      <swiper-item v-for="item in topStory" :data-id="item.id" @click="newsHref">
         <div class="item-wrap" :style="{backgroundImage: 'url('+item.image+')'}">
           <p class="top-title">{{item.title}}</p>
         </div>
@@ -9,7 +9,7 @@
     </swiper>
 
     <div class="content" @touchstart="touchS" @touchmove="touchM"  @touchend="touchE">
-      <div class="item-news" v-for="item in content">
+      <div class="item-news" v-for="item in content" :data-id="item.id" @click="newsHref">
         <div class="left-text">
           {{item.title}}
         </div>
@@ -53,7 +53,6 @@ export default {
         url: 'https://news-at.zhihu.com/api/4/news/latest',
         success: (res) => {
           if (res.statusCode === 200) {
-            console.log(res)
             this.topStory = res.data.top_stories
             this.date = res.data.date
             this.content = res.data.stories
@@ -62,14 +61,19 @@ export default {
       })
     },
 
+    // 新闻页面跳转
+    newsHref (e) {
+      let id = e.currentTarget.dataset.id
+      let url = '../article/main?id=' + id
+      wx.navigateTo({ url })
+    },
+
     touchS (e) {
       this.startY = e.pageY
     },
 
     touchM (e) {
       this.endY = e.pageY
-      console.log(e)
-      console.log(e.pageY)
       if (this.startY - e.pageY > 100) {
         this.showLoading = true
       } else {
