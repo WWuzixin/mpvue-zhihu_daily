@@ -1,6 +1,7 @@
 <template>
-  <div class="container">
-    <div class="top-img" :style="{backgroundImage: 'url('+article.image+')'}">
+  <div class="container" @touchstart="touchS" @touchmove="touchM" @touchend="touchE"
+   :style="{animation: updateAnimation +'.5s 1'}">
+    <div class="top-img" :style="{backgroundImage: 'url('+article.image+')', height: imgHeiht + 'rpx'}">
       <div class="item-wrap">
         <div class="image-source">
           图片：{{article.image_source}}
@@ -15,12 +16,15 @@
     </div>
 
     <div class="foot-nav">
-      <div class="arrow">
+      <div class="arrow" @click="updateNews">
         <img src="/static/img/arrow.png" alt="">
       </div>
-      <div class="zan">
+      <div class="zan" @click="clickZan">
         <img src="/static/img/zan.png" alt="">
         <span class="zan-num">{{articleExtra.popularity}}</span>
+        <div class="zan-mask" v-show="showZan">
+          {{articleExtra.popularity}}
+        </div>
       </div>
       <div class="message" @click="commentHref">
         <img src="/static/img/message.png" alt="">
@@ -39,22 +43,30 @@ export default {
   data () {
     return {
       id: '', // 文章id
+      prevId: '', // 上一篇文章id
+      nextId: '', // 下一篇文章id
       article: [], // 文章内容
-      articleExtra: [] // 文章额外信息
+      articleExtra: [], // 文章额外信息
+      showZan: false, // 点赞效果
+      imgHeiht: 400, // 图片高度
+      updateAnimation: ''
     }
   },
 
   beforeMount () {
     this.id = this.$root.$mp.query.id
-    this.getArticle()
+    this.prevId = this.$root.$mp.query.prevId
+    this.getArticle(this.id)
     this.getArticleInfo()
   },
-
+  onPullDownRefresh (e) {
+    console.log(e)
+  },
   methods: {
     // 文章内容
-    getArticle () {
+    getArticle (id) {
       wx.request({
-        url: 'https://news-at.zhihu.com/api/4/news/' + this.id,
+        url: 'https://news-at.zhihu.com/api/4/news/' + id,
         success: (res) => {
           if (res.statusCode === 200) {
             this.article = res.data
@@ -78,7 +90,18 @@ export default {
     // 评论页面跳转
     commentHref () {
       let url = '../comment/main?id=' + this.id
+      this.showZan = false
       wx.navigateTo({ url })
+    },
+
+    // 点赞效果
+    clickZan () {
+      this.showZan = !this.showZan
+    },
+
+    // 下篇文章
+    updateNews () {
+      this.updateAnimation = 'updateNews'
     }
   },
 
@@ -94,6 +117,17 @@ export default {
 <style scoped>
 .container{
   padding: 0;
+  position: fixed;
+  transition: all .3s;
+}
+
+@keyframes updateNews {
+  0% {
+    top: 0%;
+  },
+  100% {
+    top: -100%;
+  }
 }
 
 .top-img{
@@ -197,5 +231,29 @@ export default {
   top: 0;
   right: -10rpx;
   text-align: center;
+}
+
+.zan-mask{
+  position: absolute;
+  width: 120rpx;
+  height: 60rpx;
+  font-size: 30rpx;
+  color: #ffffff;
+  background-color: #1da1f2;
+  text-align:center;
+  line-height:60rpx;
+  border-radius:10rpx;
+  transition: all .5s;
+  animation: showZan .5s 1 forwards;
+  z-index: -1;
+}
+
+@keyframes showZan {
+  0% {
+    top: 0rpx
+  },
+  100% {
+    top:-80rpx;
+  }
 }
 </style>

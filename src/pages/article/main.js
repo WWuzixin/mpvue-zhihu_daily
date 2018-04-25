@@ -9,6 +9,7 @@ export default {
     'navigationBarBackgroundColor': '#1da1f2',
     'navigationBarTitleText': '新闻详知',
     'navigationBarTextStyle': 'white',
-    'disableScroll': false
+    'disableScroll': false,
+    'enablePullDownRefresh': true
   }
 }

@@ -9,7 +9,7 @@
     </swiper>
 
     <div class="content" @touchstart="touchS" @touchmove="touchM"  @touchend="touchE">
-      <div class="item-news" v-for="item in content" :data-id="item.id" @click="newsHref">
+      <div class="item-news" v-for="(item,index) in content" :data-id="item.id" :data-index="index" @click="newsHref">
         <div class="left-text">
           {{item.title}}
         </div>
@@ -64,7 +64,11 @@ export default {
     // 新闻页面跳转
     newsHref (e) {
       let id = e.currentTarget.dataset.id
-      let url = '../article/main?id=' + id
+      let prevIndex = e.currentTarget.dataset.index - 1
+      let nextIndex = e.currentTarget.dataset.index + 1
+      let prevId = prevIndex > 0 ? this.content[prevIndex].id : 0 // 0即当前文章是最新的文章
+      let nextId = nextIndex < this.content.length ? this.content[nextIndex].id : id // id即当前文章是最后的文章
+      let url = '../article/main?id=' + id + '&prevId=' + prevId + '&nextId=' + nextId
       wx.navigateTo({ url })
     },
 

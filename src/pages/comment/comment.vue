@@ -30,6 +30,9 @@ export default {
         this.maxHeight = res.windowHeight
       }
     })
+    let allComment = this.longNum + this.shortNum
+    let title = allComment + '条评论'
+    wx.setNavigationBarTitle({ title })
   },
 
   methods: {
