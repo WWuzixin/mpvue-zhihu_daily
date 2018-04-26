@@ -18,9 +18,8 @@
         </div>
       </div>
     </div>
-    <div class="loading" v-show="showLoading">
-      ~~~~~~~~~~~~~
-    </div>
+    <!-- <div class="loading" v-show="showLoading">
+    </div> -->
   </div>
 </template>
 
@@ -63,12 +62,14 @@ export default {
 
     // 新闻页面跳转
     newsHref (e) {
-      let id = e.currentTarget.dataset.id
-      let prevIndex = e.currentTarget.dataset.index - 1
-      let nextIndex = e.currentTarget.dataset.index + 1
-      let prevId = prevIndex > 0 ? this.content[prevIndex].id : 0 // 0即当前文章是最新的文章
-      let nextId = nextIndex < this.content.length ? this.content[nextIndex].id : id // id即当前文章是最后的文章
-      let url = '../article/main?id=' + id + '&prevId=' + prevId + '&nextId=' + nextId
+      let id = e.currentTarget.dataset.id // 当前id
+      let index = e.currentTarget.dataset.index // 当前index
+      let allId = this.content.map(item => {
+        let arr = []
+        arr.push(item.id)
+        return arr
+      })
+      let url = '../article/main?id=' + id + '&index=' + index + '&allId=' + allId
       wx.navigateTo({ url })
     },
 

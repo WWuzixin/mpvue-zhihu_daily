@@ -1,6 +1,5 @@
 <template>
-  <div class="container" @touchstart="touchS" @touchmove="touchM" @touchend="touchE"
-   :style="{animation: updateAnimation +'.5s 1'}">
+  <div class="container" @click="showZan = false, zanImg = '/static/img/zan.png'">
     <div class="top-img" :style="{backgroundImage: 'url('+article.image+')', height: imgHeiht + 'rpx'}">
       <div class="item-wrap">
         <div class="image-source">
@@ -16,17 +15,17 @@
     </div>
 
     <div class="foot-nav">
-      <div class="arrow" @click="updateNews">
+      <div class="arrow" @click.stop="updateNews">
         <img src="/static/img/arrow.png" alt="">
       </div>
-      <div class="zan" @click="clickZan">
-        <img src="/static/img/zan.png" alt="">
+      <div class="zan" :class="{ press_zan: showZan }" @click.stop="clickZan">
+        <img :src="zanImg" alt="">
         <span class="zan-num">{{articleExtra.popularity}}</span>
         <div class="zan-mask" v-show="showZan">
           {{articleExtra.popularity}}
         </div>
       </div>
-      <div class="message" @click="commentHref">
+      <div class="message" @click.stop="commentHref(id)">
         <img src="/static/img/message.png" alt="">
         <span class="message-num">{{articleExtra.comments}}</span>
       </div>
@@ -43,42 +42,48 @@ export default {
   data () {
     return {
       id: '', // 文章id
-      prevId: '', // 上一篇文章id
-      nextId: '', // 下一篇文章id
+      allId: [], // 该日期所有文章id
+      index: '', // 当前文章index
       article: [], // 文章内容
       articleExtra: [], // 文章额外信息
       showZan: false, // 点赞效果
       imgHeiht: 400, // 图片高度
-      updateAnimation: ''
+      zanImg: '/static/img/zan.png' // 点赞图片
     }
   },
 
-  beforeMount () {
+  onLoad () {
     this.id = this.$root.$mp.query.id
-    this.prevId = this.$root.$mp.query.prevId
+    this.allId = this.$root.$mp.query.allId.split(',')
+    this.index = this.$root.$mp.query.index
+  },
+
+  onShow () {
     this.getArticle(this.id)
-    this.getArticleInfo()
+    this.getArticleInfo(this.id)
   },
-  onPullDownRefresh (e) {
-    console.log(e)
-  },
+
   methods: {
     // 文章内容
     getArticle (id) {
+      wx.showLoading({
+        mask: true
+      })
       wx.request({
         url: 'https://news-at.zhihu.com/api/4/news/' + id,
         success: (res) => {
           if (res.statusCode === 200) {
             this.article = res.data
+            wx.hideLoading()
           }
         }
       })
     },
 
     // 文章额外信息
-    getArticleInfo () {
+    getArticleInfo (id) {
       wx.request({
-        url: 'https://news-at.zhihu.com/api/4/story-extra/' + this.id,
+        url: 'https://news-at.zhihu.com/api/4/story-extra/' + id,
         success: (res) => {
           if (res.statusCode === 200) {
             this.articleExtra = res.data
@@ -88,8 +93,8 @@ export default {
     },
 
     // 评论页面跳转
-    commentHref () {
-      let url = '../comment/main?id=' + this.id
+    commentHref (id) {
+      let url = '../comment/main?id=' + id + '&comment=' + this.articleExtra.comments
       this.showZan = false
       wx.navigateTo({ url })
     },
@@ -97,15 +102,46 @@ export default {
     // 点赞效果
     clickZan () {
       this.showZan = !this.showZan
+      if (this.showZan === true) {
+        this.zanImg = '/static/img/zan-press.png'
+      } else {
+        this.zanImg = '/static/img/zan.png'
+      }
     },
 
     // 下篇文章
     updateNews () {
-      this.updateAnimation = 'updateNews'
+      let nextIndex = Number(this.index) + 1
+      if (nextIndex >= this.allId.length) {
+        wx.showModal({
+          title: '温馨提示',
+          content: '这是最后一篇啦，不要点啦！',
+          showCancel: false,
+          confirmText: '好啦',
+          confirmColor: '#1da1f2'
+        })
+      } else {
+        // 这里的空赋值是页面体验
+        this.title = ''
+        this.img = ''
+        this.content = ''
+        this.image_source = ''
+        this.allId.forEach((item, key) => {
+          if (key === nextIndex) {
+            this.id = item
+            this.index = key
+          }
+        })
+        this.getArticle(this.id)
+        this.getArticleInfo(this.id)
+        wx.pageScrollTo({
+          scrollTop: 0
+        })
+      }
     }
   },
 
-  onUnload () {
+  beforeDestroy () {
     this.title = ''
     this.img = ''
     this.content = ''
@@ -117,17 +153,6 @@ export default {
 <style scoped>
 .container{
   padding: 0;
-  position: fixed;
-  transition: all .3s;
-}
-
-@keyframes updateNews {
-  0% {
-    top: 0%;
-  },
-  100% {
-    top: -100%;
-  }
 }
 
 .top-img{
@@ -182,8 +207,8 @@ export default {
 .arrow{
   display: flex;
   align-items: center;
-  margin-left: 24rpx;
-  width: 200rpx;
+  margin-left: 104rpx;
+  width: 80rpx;
   height: 100%;
 }
 
@@ -197,13 +222,17 @@ export default {
   position: relative;
 }
 
+.press_zan{
+  color: #1da1f2
+}
+
 .message{
   display: flex;
   align-items: center;
   flex-direction: row-reverse;
-  margin-right: 24rpx;
+  margin-right: 104rpx;
   padding-right: 10rpx;
-  width: 190rpx;
+  width: 80rpx;
   position: relative;
 }
 
@@ -220,6 +249,11 @@ export default {
   top: 0;
   right: 40rpx;
 }
+
+.press_zan .zan-num{
+  color: #1da1f2
+}
+
 
 .message-num{
   font-size: 16rpx;
