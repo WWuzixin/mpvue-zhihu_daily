@@ -101,7 +101,7 @@ export default {
     this.getShortComment()
     wx.getSystemInfo({
       success: (res) => {
-        this.maxHeight = res.windowHeight
+        this.maxHeight = res.windowHeight - 37
       }
     })
   },
