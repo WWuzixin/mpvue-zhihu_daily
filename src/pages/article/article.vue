@@ -25,7 +25,7 @@
           {{articleExtra.popularity}}
         </div>
       </div>
-      <div class="message" @click.stop="commentHref(id)">
+      <div class="message" @click.stop="commentHref">
         <img src="/static/img/message.png" alt="">
         <span class="message-num">{{articleExtra.comments}}</span>
       </div>
@@ -93,8 +93,8 @@ export default {
     },
 
     // 评论页面跳转
-    commentHref (id) {
-      let url = '../comment/main?id=' + id + '&comment=' + this.articleExtra.comments
+    commentHref () {
+      let url = '../comment/main?id=' + this.id + '&comment=' + this.articleExtra.comments
       this.showZan = false
       wx.navigateTo({ url })
     },

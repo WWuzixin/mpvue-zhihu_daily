@@ -1,7 +1,7 @@
 <template>
   <div class="container">
     <swiper class="top-story" autoplay="true" circular="true" indicator-dots="true" indicator-color="rgba(0,0,0,.3)" interval="4000" duration="500" indicator-active-color="#ffffff">
-      <swiper-item v-for="item in topStory" :data-id="item.id" @click="newsHref">
+      <swiper-item v-for="(item,index) in topStory" :data-id="item.id" @click="newsHref">
         <div class="item-wrap" :style="{backgroundImage: 'url('+item.image+')'}">
           <p class="top-title">{{item.title}}</p>
         </div>
